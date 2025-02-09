@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const axios = require("axios");
 const { init: initDB, Counter } = require("./db");
 
 const logger = morgan("tiny");
@@ -46,6 +47,24 @@ app.get("/api/count", async (req, res) => {
 app.get("/api/wx_openid", async (req, res) => {
   if (req.headers["x-wx-source"]) {
     res.send(req.headers["x-wx-openid"]);
+  }
+});
+
+// 新增分析接口：POST /api/analysis 接受 fileID 和 imageID 参数
+app.post("/api/analysis", async (req, res) => {
+  const { fileID, imageID } = req.body;
+  try {
+    const response = await axios.post("http://43.139.206.135:1234/analysis", {
+      fileID,
+      imageID,
+    });
+    res.send(response.data);
+  } catch (error) {
+    console.error("调用外部分析 API 出错:", error);
+    res.status(500).send({
+      code: -1,
+      error: error.message,
+    });
   }
 });
 
